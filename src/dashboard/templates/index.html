@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Personal Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --card-bg: #ffffff;
+      --page-bg: #f4f5f7;
+      --text: #1f2328;
+      --muted: #656d76;
+      --accent: #0969da;
+      --error-bg: #fff5f5;
+      --error-text: #b42318;
+      --border: #d0d7de;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --card-bg: #161b22;
+        --page-bg: #0d1117;
+        --text: #e6edf3;
+        --muted: #8d96a0;
+        --accent: #4493f8;
+        --error-bg: #2d1618;
+        --error-text: #ff7b72;
+        --border: #30363d;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 2rem 1rem;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--page-bg);
+      color: var(--text);
+    }
+    .container { max-width: 960px; margin: 0 auto; }
+    header h1 { margin: 0 0 0.25rem; font-size: 1.75rem; }
+    header p { margin: 0 0 2rem; color: var(--muted); }
+    .grid {
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+    .card h2 {
+      margin: 0 0 0.75rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .value { font-size: 2rem; font-weight: 600; margin: 0; }
+    .sub { color: var(--muted); margin: 0.5rem 0 0; font-size: 0.9rem; }
+    .metric { font-size: 1.75rem; font-weight: 600; }
+    .metric-label { color: var(--muted); font-size: 0.9rem; }
+    .metrics { display: flex; gap: 2rem; }
+    .error {
+      margin-top: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      background: var(--error-bg);
+      color: var(--error-text);
+      font-size: 0.85rem;
+    }
+    footer { margin-top: 2rem; color: var(--muted); font-size: 0.8rem; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Personal Dashboard</h1>
+      <p>Time, Wrocław weather, and recent OpenHands GitHub activity.</p>
+    </header>
+
+    <div class="grid">
+      <section class="card" aria-labelledby="time-heading">
+        <h2 id="time-heading">Current time</h2>
+        {% if time %}
+          <p class="value">{{ time.strftime('%H:%M:%S') }}</p>
+          <p class="sub">{{ time.strftime('%A, %d %B %Y') }} · {{ settings.timezone }}</p>
+        {% else %}
+          <p class="sub">Time unavailable.</p>
+        {% endif %}
+        {% if errors.time %}<div class="error">{{ errors.time }}</div>{% endif %}
+      </section>
+
+      <section class="card" aria-labelledby="weather-heading">
+        <h2 id="weather-heading">Weather</h2>
+        {% if weather %}
+          <p class="value">{{ '%.1f'|format(weather.temperature_c) }}&deg;C</p>
+          <p class="sub">
+            {{ weather.description }} · feels like
+            {{ '%.1f'|format(weather.apparent_temperature_c) }}&deg;C ·
+            wind {{ '%.1f'|format(weather.wind_speed_kmh) }} km/h
+          </p>
+          <p class="sub">{{ weather.location }}</p>
+        {% else %}
+          <p class="sub">Weather unavailable.</p>
+        {% endif %}
+        {% if errors.weather %}<div class="error">{{ errors.weather }}</div>{% endif %}
+      </section>
+
+      <section class="card" aria-labelledby="github-heading">
+        <h2 id="github-heading">GitHub · last 24 h</h2>
+        {% if activity %}
+          <div class="metrics">
+            <div>
+              <div class="metric">{{ activity.issues_opened }}</div>
+              <div class="metric-label">issues opened</div>
+            </div>
+            <div>
+              <div class="metric">{{ activity.pull_requests_opened }}</div>
+              <div class="metric-label">pull requests opened</div>
+            </div>
+          </div>
+          <p class="sub">
+            <a href="https://github.com/{{ activity.repo }}" target="_blank" rel="noopener">
+              {{ activity.repo }}
+            </a>
+          </p>
+        {% else %}
+          <p class="sub">GitHub activity unavailable.</p>
+        {% endif %}
+        {% if errors.activity %}<div class="error">{{ errors.activity }}</div>{% endif %}
+      </section>
+    </div>
+
+    <footer>Personal dashboard · data from Open-Meteo and the GitHub API.</footer>
+  </div>
+</body>
+</html>
